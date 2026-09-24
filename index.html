@@ -1,4 +1,3 @@
-[tennis (2).html](https://github.com/user-attachments/files/32601547/tennis.2.html)
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -509,30 +508,42 @@
     return d;
   }
 
-  async function syncPull() {
-    if (!isCloudEnabled() || syncing) return;
+  async function syncPull(opts) {
+    opts = opts || {};
+    var silent = !!opts.silent;
+    if (!isCloudEnabled() || syncing) return false;
     syncing = true;
-    setSyncStatus('syncing', 'Загрузка из облака…');
+    if (!silent) setSyncStatus('syncing', 'Загрузка из облака…');
     try {
       var remote = await cloudGet();
       if (remote && remote.people && remote.sessions) {
         state = normalizeState(remote);
         saveLocal(state);
-        selected = {};
-        editingKey = null;
+        // don't wipe selection/edit if silent background refresh mid-edit
+        if (!silent) {
+          selected = {};
+          editingKey = null;
+        } else if (editingKey === null) {
+          // ok to refresh list when not editing
+        }
         renderPeople();
         updateCourtHint();
         setSyncStatus('online', 'Облако · данные общие');
-        showToast('Данные обновлены');
+        if (!silent) showToast('Данные обновлены');
+        syncing = false;
+        return true;
       } else {
         await cloudPut(state);
         setSyncStatus('online', 'Облако · данные общие');
+        syncing = false;
+        return true;
       }
     } catch (e) {
       setSyncStatus('error', 'Ошибка облака');
-      showToast('Не удалось загрузить');
+      if (!silent) showToast('Не удалось загрузить');
+      syncing = false;
+      return false;
     }
-    syncing = false;
   }
 
   async function syncPush() {
@@ -797,10 +808,27 @@
     document.getElementById('preview-total-val').textContent = result.total + ' ₽';
   }
 
-  document.getElementById('save-btn').addEventListener('click', function() {
+  document.getElementById('save-btn').addEventListener('click', async function() {
     var date = document.getElementById('session-date').value;
     var names = Object.keys(selected);
     if (!date || names.length === 0) return;
+
+    // auto-refresh from cloud before saving to reduce overwrites
+    if (isCloudEnabled()) {
+      setSyncStatus('syncing', 'Синхронизация…');
+      try {
+        var remote = await cloudGet();
+        if (remote && remote.people && remote.sessions) {
+          var remoteState = normalizeState(remote);
+          // merge: keep remote sessions, but we'll add/replace our session below
+          state.people = remoteState.people;
+          state.rates = remoteState.rates || state.rates;
+          state.sessions = remoteState.sessions;
+          saveLocal(state);
+        }
+      } catch (e) { /* keep local and save anyway */ }
+    }
+
     var rate = getRate(selectedCourt);
     var result = calculateAmounts(selected, rate);
     var players = [];
@@ -1255,6 +1283,16 @@
   renderPeople();
   updateCourtHint();
   initCloudUI();
+
+  // auto-sync when app opens or returns to foreground
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && isCloudEnabled()) {
+      syncPull({ silent: true });
+    }
+  });
+  window.addEventListener('focus', function() {
+    if (isCloudEnabled()) syncPull({ silent: true });
+  });
 })();
 </script>
 </body>
