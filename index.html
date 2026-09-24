@@ -1,0 +1,1030 @@
+[tennis.html](https://github.com/user-attachments/files/32599866/tennis.html)
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Теннис">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Теннис — учёт</title>
+<link rel="manifest" href="data:application/manifest+json,{"name":"Теннис%20—%20учёт","short_name":"Теннис","start_url":".","display":"standalone","background_color":"%230f172a","theme_color":"%230f172a","lang":"ru","icons":[{"src":"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20fill='%230f172a'%20width='100'%20height='100'/%3E%3Ctext%20y='.9em'%20font-size='80'%20x='10'%3E%F0%9F%8E%BE%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20fill='%230f172a'%20width='100'%20height='100'/%3E%3Ctext%20y='.9em'%20font-size='80'%20x='10'%3E%F0%9F%8E%BE%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --accent: #22c55e; --accent-hover: #16a34a;
+    --text: #f1f5f9; --muted: #94a3b8; --border: #334155; --danger: #ef4444; --blue: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 40px;
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 12px; }
+  .sync-status {
+    font-size: 0.75rem; color: var(--muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+  .sync-dot.online { background: var(--accent); }
+  .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--danger); }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+  .tab {
+    flex: 1; padding: 12px 4px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--muted); font-size: 0.85rem; cursor: pointer;
+    text-align: center; user-select: none;
+  }
+  .tab.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--card); border-radius: 14px; padding: 16px;
+    margin-bottom: 14px; border: 1px solid var(--border);
+  }
+  .label {
+    display: block; font-size: 0.75rem; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+
+  input[type="date"], input[type="number"], input[type="text"], input[type="password"], select {
+    width: 100%; max-width: 100%; padding: 13px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-size: 1rem; margin-bottom: 12px;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"] {
+    min-height: 48px;
+    padding-right: 12px;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  select { appearance: none; }
+
+  .court-pills { display: flex; gap: 8px; margin-bottom: 4px; }
+  .court-pill {
+    flex: 1; padding: 12px; text-align: center; border-radius: 10px;
+    border: 2px solid var(--border); background: var(--bg); color: var(--muted);
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; user-select: none;
+  }
+  .court-pill.active {
+    border-color: var(--accent); background: rgba(34, 197, 94, 0.15); color: var(--accent);
+  }
+  .court-rate-hint {
+    font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 6px;
+  }
+
+  .people-list { display: flex; flex-direction: column; gap: 8px; }
+  .person {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; background: var(--bg); border-radius: 12px;
+    border: 2px solid var(--border); cursor: pointer;
+    user-select: none; min-height: 52px;
+  }
+  .person.checked { border-color: var(--accent); background: rgba(34, 197, 94, 0.12); }
+  .person .box {
+    width: 26px; height: 26px; border: 2px solid var(--border);
+    border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 15px; font-weight: bold; color: transparent;
+  }
+  .person.checked .box { background: var(--accent); border-color: var(--accent); color: #000; }
+  .person .name { font-size: 1.05rem; flex: 1; }
+  .person .hours-wrap { display: none; align-items: center; gap: 6px; }
+  .person.checked .hours-wrap { display: flex; }
+  .person .hours-wrap input {
+    width: 56px; padding: 7px 4px; margin: 0; text-align: center;
+    font-size: 0.95rem; border-radius: 8px;
+  }
+  .person .hours-wrap span { font-size: 0.8rem; color: var(--muted); }
+
+  .btn {
+    width: 100%; padding: 15px; border: none; border-radius: 12px;
+    font-size: 1.05rem; font-weight: 700; cursor: pointer; user-select: none;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:active { background: var(--accent-hover); }
+  .btn-primary:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); margin-top: 8px; font-weight: 500;
+  }
+  .btn-danger {
+    background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger);
+    color: var(--danger); font-size: 0.85rem; padding: 10px 16px;
+    width: auto; font-weight: 600; border-radius: 8px;
+  }
+  .btn-edit {
+    background: rgba(59, 130, 246, 0.15); border: 1px solid var(--blue);
+    color: var(--blue); font-size: 0.85rem; padding: 10px 16px;
+    width: auto; font-weight: 600; border-radius: 8px;
+  }
+  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+
+  .preview {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 12px; padding: 14px; margin-bottom: 14px; display: none;
+  }
+  .preview.show { display: block; }
+  .preview .title { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .preview-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; font-size: 0.95rem;
+  }
+  .preview-row .pamount { font-weight: 700; color: var(--accent); }
+  .preview-total {
+    border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px;
+    display: flex; justify-content: space-between; font-weight: 700;
+  }
+
+  .summary-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 13px 0; border-bottom: 1px solid var(--border);
+  }
+  .summary-item:last-child { border-bottom: none; }
+  .summary-item .name { font-weight: 500; font-size: 1.05rem; }
+  .summary-item .stats { text-align: right; }
+  .summary-item .money { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+  .summary-item .sub { font-size: 0.78rem; color: var(--muted); }
+
+  .month-block { margin-bottom: 8px; }
+  .month-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; background: var(--card); border-radius: 12px;
+    cursor: pointer; user-select: none; border: 1px solid var(--border);
+  }
+  .month-header .mname { font-weight: 600; font-size: 1rem; }
+  .month-header .mtotal { font-weight: 700; color: var(--accent); }
+  .month-header .arrow { color: var(--muted); font-size: 0.85rem; margin-left: 8px; }
+  .month-body { display: none; padding: 8px 0 0; }
+  .month-body.open { display: block; }
+
+  .session {
+    padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--card);
+  }
+  .session:first-child { border-radius: 12px 12px 0 0; }
+  .session:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
+  .session:only-child { border-radius: 12px; }
+  .session .date { font-weight: 600; font-size: 1.05rem; margin-bottom: 4px; }
+  .session .court-tag {
+    display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px;
+    background: rgba(34, 197, 94, 0.15); color: var(--accent); margin-bottom: 6px; font-weight: 600;
+  }
+  .session .player-line {
+    display: flex; justify-content: space-between;
+    font-size: 0.88rem; color: var(--muted); padding: 2px 0;
+  }
+  .session .player-line .amt { color: var(--accent); font-weight: 600; }
+  .session .total-line { font-size: 0.9rem; color: var(--accent); margin-top: 6px; font-weight: 600; }
+
+  .session .confirm-bar {
+    display: none; margin-top: 10px; padding: 12px;
+    background: rgba(239, 68, 68, 0.12); border-radius: 10px; border: 1px solid var(--danger);
+  }
+  .session .confirm-bar.show { display: block; }
+  .session .confirm-bar p { font-size: 0.9rem; margin-bottom: 10px; }
+  .session .confirm-bar .btn-yes {
+    background: var(--danger); color: #fff; border: none;
+    font-size: 0.85rem; padding: 10px 16px; width: auto; font-weight: 600; border-radius: 8px; cursor: pointer;
+  }
+  .session .confirm-bar .btn-no {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); font-size: 0.85rem; padding: 10px 16px; width: auto; font-weight: 600; border-radius: 8px; cursor: pointer;
+  }
+
+  .empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: 0.95rem; }
+  .total-bar {
+    background: rgba(34, 197, 94, 0.12); border: 1px solid var(--accent);
+    border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 14px;
+  }
+  .total-bar .lbl { font-size: 0.78rem; color: var(--muted); margin-bottom: 2px; }
+  .total-bar .val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+
+  .add-row { display: flex; gap: 8px; margin-top: 12px; }
+  .add-row input { margin: 0; flex: 1; }
+  .add-row .btn { width: auto; padding: 13px 18px; }
+  .manage-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--bg); border-radius: 10px; margin-bottom: 6px;
+  }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #000; padding: 12px 28px;
+    border-radius: 30px; font-weight: 700; font-size: 0.95rem;
+    opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+  .row-2 { display: flex; gap: 12px; }
+  .row-2 > div { flex: 1; }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 4px; }
+  .filter-row select { margin-bottom: 0; }
+
+  .rate-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .rate-row .rate-label { flex: 1; font-size: 0.95rem; }
+  .rate-row input { width: 90px; margin: 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>🎾 Теннис</h1>
+<p class="subtitle">Каждый час делится между теми, кто играл</p>
+<div class="sync-status" id="sync-status">
+  <span class="sync-dot" id="sync-dot"></span>
+  <span id="sync-text">Локальный режим</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="today">Сегодня</div>
+  <div class="tab" data-tab="summary">Итоги</div>
+  <div class="tab" data-tab="history">История</div>
+  <div class="tab" data-tab="settings">Ещё</div>
+</div>
+
+<div class="panel active" id="panel-today">
+  <div class="card">
+    <span class="label">Корт</span>
+    <div class="court-pills" id="court-pills">
+      <div class="court-pill active" data-court="YesToday">YesToday</div>
+      <div class="court-pill" data-court="Славинского">Славинского</div>
+    </div>
+    <div class="court-rate-hint" id="court-rate-hint">34 ₽/час</div>
+  </div>
+  <div class="card">
+    <span class="label">Дата</span>
+    <input type="date" id="session-date">
+  </div>
+  <div class="card">
+    <span class="label">Кто пришёл и сколько часов играл</span>
+    <div class="people-list" id="people-list"></div>
+    <p class="hint">Нажми на имя → галочка → укажи часы</p>
+  </div>
+  <div class="preview" id="preview">
+    <div class="title">Сколько заплатит каждый</div>
+    <div id="preview-rows"></div>
+    <div class="preview-total">
+      <span>Всего за корт</span>
+      <span id="preview-total-val">0 ₽</span>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="save-btn" disabled>Сохранить занятие</button>
+  <p id="edit-hint" class="hint" style="display:none;text-align:center;margin-top:8px">Редактирование — нажми «Сохранить изменения»</p>
+</div>
+
+<div class="panel" id="panel-summary">
+  <div class="card" style="padding:12px">
+    <span class="label">Фильтры</span>
+    <div class="filter-row">
+      <select id="court-filter" style="flex:1">
+        <option value="all">Все корты</option>
+        <option value="YesToday">YesToday</option>
+        <option value="Славинского">Славинского</option>
+      </select>
+      <select id="month-filter" style="flex:1">
+        <option value="all">Все месяцы</option>
+      </select>
+    </div>
+  </div>
+  <div class="total-bar">
+    <div class="lbl" id="period-label">Всего должны</div>
+    <div class="val" id="grand-total">0 ₽</div>
+  </div>
+  <div class="card" id="summary-list"><div class="empty">Пока нет данных</div></div>
+</div>
+
+<div class="panel" id="panel-history">
+  <div class="card" style="padding:12px;margin-bottom:14px">
+    <span class="label">Корт</span>
+    <select id="history-court-filter">
+      <option value="all">Все корты</option>
+      <option value="YesToday">YesToday</option>
+      <option value="Славинского">Славинского</option>
+    </select>
+  </div>
+  <div id="history-list"><div class="card"><div class="empty">Пока нет занятий</div></div></div>
+</div>
+
+<div class="panel" id="panel-settings">
+  <div class="card">
+    <span class="label">Цена за 1 час по кортам (₽)</span>
+    <div class="rate-row">
+      <span class="rate-label">YesToday</span>
+      <input type="number" id="rate-yestoday" value="34" min="1">
+    </div>
+    <div class="rate-row">
+      <span class="rate-label">Славинского</span>
+      <input type="number" id="rate-slavinskogo" value="34" min="1">
+    </div>
+    <button class="btn btn-primary" id="save-rates-btn">Сохранить цены</button>
+  </div>
+
+  <div class="card">
+    <span class="label">☁️ Облачная синхронизация</span>
+    <span class="label" style="margin-top:14px">Bin ID</span>
+    <input type="text" id="bin-id" placeholder="например 67a1b2c3d4e5f6789012345">
+    <span class="label">Master Key</span>
+    <input type="password" id="master-key" placeholder="$2a$10$...">
+    <button class="btn btn-primary" id="cloud-connect-btn">Подключить</button>
+    <button class="btn btn-secondary" id="cloud-pull-btn" style="display:none">Обновить из облака</button>
+    <button class="btn btn-secondary" id="cloud-disconnect-btn" style="display:none">Отключить облако</button>
+  </div>
+
+  <div class="card">
+    <span class="label">Участники</span>
+    <div id="people-manage"></div>
+    <div class="add-row">
+      <input type="text" id="new-name" placeholder="Новое имя">
+      <button class="btn btn-primary" id="add-person-btn">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="btn btn-secondary" id="export-btn">Скачать данные (JSON)</button>
+    <button class="btn btn-secondary" id="import-btn">Загрузить данные</button>
+    <input type="file" id="import-file" accept=".json" style="display:none">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  var DEFAULT_PEOPLE = ['Денис','Влад','Артем','Кирилл','Настя','Рома','Коля','Анжелика','Алина'];
+  var STEP = 0.5;
+  var MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var MONTHS_SHORT = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+  var API = 'https://api.jsonbin.io/v3/b';
+
+  function defaultRates() {
+    return { 'YesToday': 34, 'Славинского': 34 };
+  }
+
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem('tennis_v3');
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d.people && d.sessions) {
+          if (!d.rates) {
+            d.rates = defaultRates();
+            if (d.rate) {
+              d.rates['YesToday'] = d.rate;
+              d.rates['Славинского'] = d.rate;
+            }
+          }
+          for (var i = 0; i < d.sessions.length; i++) {
+            if (!d.sessions[i].court) d.sessions[i].court = 'YesToday';
+          }
+          return d;
+        }
+      }
+    } catch(e) {}
+    return { rates: defaultRates(), people: DEFAULT_PEOPLE.slice(), sessions: [] };
+  }
+  function saveLocal(data) { localStorage.setItem('tennis_v3', JSON.stringify(data)); }
+
+  function loadCloudConfig() {
+    try {
+      var c = localStorage.getItem('tennis_cloud');
+      if (c) return JSON.parse(c);
+    } catch(e) {}
+    return { binId: '', masterKey: '' };
+  }
+  function saveCloudConfig(cfg) { localStorage.setItem('tennis_cloud', JSON.stringify(cfg)); }
+
+  var state = loadLocal();
+  var cloud = loadCloudConfig();
+  var selected = {};
+  var editingKey = null; // "date|court"
+  var selectedCourt = 'YesToday';
+  var syncing = false;
+
+  function getRate(court) {
+    if (state.rates && state.rates[court]) return state.rates[court];
+    return 34;
+  }
+
+  function setSyncStatus(mode, text) {
+    document.getElementById('sync-dot').className = 'sync-dot ' + (mode || '');
+    document.getElementById('sync-text').textContent = text || '';
+  }
+  function isCloudEnabled() { return !!(cloud.binId && cloud.masterKey); }
+
+  async function cloudGet() {
+    if (!isCloudEnabled()) return null;
+    var res = await fetch(API + '/' + cloud.binId + '/latest', {
+      headers: { 'X-Master-Key': cloud.masterKey }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    return json.record || json;
+  }
+  async function cloudPut(data) {
+    if (!isCloudEnabled()) return;
+    var res = await fetch(API + '/' + cloud.binId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': cloud.masterKey },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  }
+
+  function normalizeState(d) {
+    if (!d.rates) {
+      d.rates = defaultRates();
+      if (d.rate) {
+        d.rates['YesToday'] = d.rate;
+        d.rates['Славинского'] = d.rate;
+      }
+    }
+    for (var i = 0; i < d.sessions.length; i++) {
+      if (!d.sessions[i].court) d.sessions[i].court = 'YesToday';
+    }
+    return d;
+  }
+
+  async function syncPull() {
+    if (!isCloudEnabled() || syncing) return;
+    syncing = true;
+    setSyncStatus('syncing', 'Загрузка из облака…');
+    try {
+      var remote = await cloudGet();
+      if (remote && remote.people && remote.sessions) {
+        state = normalizeState(remote);
+        saveLocal(state);
+        selected = {};
+        editingKey = null;
+        renderPeople();
+        updateCourtHint();
+        setSyncStatus('online', 'Облако · данные общие');
+        showToast('Данные обновлены');
+      } else {
+        await cloudPut(state);
+        setSyncStatus('online', 'Облако · данные общие');
+      }
+    } catch (e) {
+      setSyncStatus('error', 'Ошибка облака');
+      showToast('Не удалось загрузить');
+    }
+    syncing = false;
+  }
+
+  async function syncPush() {
+    if (!isCloudEnabled() || syncing) return;
+    syncing = true;
+    setSyncStatus('syncing', 'Сохранение…');
+    try {
+      await cloudPut(state);
+      setSyncStatus('online', 'Облако · данные общие');
+    } catch (e) {
+      setSyncStatus('error', 'Ошибка сохранения');
+      showToast('Не удалось сохранить в облако');
+    }
+    syncing = false;
+  }
+
+  function persist() {
+    saveLocal(state);
+    if (isCloudEnabled()) syncPush();
+  }
+
+  function initCloudUI() {
+    document.getElementById('bin-id').value = cloud.binId || '';
+    document.getElementById('master-key').value = cloud.masterKey || '';
+    var pullBtn = document.getElementById('cloud-pull-btn');
+    var discBtn = document.getElementById('cloud-disconnect-btn');
+    if (isCloudEnabled()) {
+      pullBtn.style.display = '';
+      discBtn.style.display = '';
+      setSyncStatus('online', 'Облако · данные общие');
+      syncPull();
+    } else {
+      pullBtn.style.display = 'none';
+      discBtn.style.display = 'none';
+      setSyncStatus('', 'Локальный режим');
+    }
+  }
+
+  document.getElementById('cloud-connect-btn').addEventListener('click', async function() {
+    var binId = document.getElementById('bin-id').value.trim();
+    var key = document.getElementById('master-key').value.trim();
+    if (!binId || !key) { showToast('Заполни Bin ID и Master Key'); return; }
+    cloud = { binId: binId, masterKey: key };
+    saveCloudConfig(cloud);
+    setSyncStatus('syncing', 'Подключение…');
+    try {
+      var remote = await cloudGet();
+      if (remote && remote.people && remote.sessions) {
+        state = normalizeState(remote);
+        saveLocal(state);
+        showToast('Подключено · данные из облака');
+      } else {
+        await cloudPut(state);
+        showToast('Подключено · локальные данные отправлены');
+      }
+      initCloudUI();
+      renderPeople();
+      updateCourtHint();
+    } catch (e) {
+      cloud = { binId: '', masterKey: '' };
+      saveCloudConfig(cloud);
+      setSyncStatus('error', 'Ошибка подключения');
+      showToast('Проверь Bin ID и Master Key');
+      initCloudUI();
+    }
+  });
+  document.getElementById('cloud-pull-btn').addEventListener('click', function() { syncPull(); });
+  document.getElementById('cloud-disconnect-btn').addEventListener('click', function() {
+    cloud = { binId: '', masterKey: '' };
+    saveCloudConfig(cloud);
+    initCloudUI();
+    showToast('Облако отключено');
+  });
+
+  function updateCourtHint() {
+    document.getElementById('court-rate-hint').textContent = getRate(selectedCourt) + ' ₽/час';
+  }
+
+  document.getElementById('court-pills').addEventListener('click', function(e) {
+    var pill = e.target.closest('.court-pill');
+    if (!pill) return;
+    selectedCourt = pill.getAttribute('data-court');
+    var pills = document.querySelectorAll('.court-pill');
+    for (var i = 0; i < pills.length; i++) {
+      pills[i].classList.toggle('active', pills[i].getAttribute('data-court') === selectedCourt);
+    }
+    updateCourtHint();
+    updatePreview();
+  });
+
+  document.getElementById('tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.tab');
+    if (!tab) return;
+    switchTab(tab.getAttribute('data-tab'));
+  });
+  function switchTab(name) {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle('active', tabs[i].getAttribute('data-tab') === name);
+    }
+    var panels = document.querySelectorAll('.panel');
+    for (var j = 0; j < panels.length; j++) panels[j].classList.remove('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'summary') renderSummary();
+    if (name === 'history') renderHistory();
+    if (name === 'settings') renderSettings();
+  }
+
+  function getDefaultDate() {
+    var d = new Date();
+    var day = d.getDay();
+    if (day !== 6) {
+      var add = (6 - day + 7) % 7;
+      if (add === 0) add = 7;
+      d.setDate(d.getDate() + add);
+    }
+    return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+  }
+  document.getElementById('session-date').value = getDefaultDate();
+
+  function formatDate(iso) {
+    var parts = iso.split('-');
+    return parseInt(parts[2],10) + ' ' + MONTHS_SHORT[parseInt(parts[1],10)-1] + ' ' + parts[0];
+  }
+  function getMonthKey(iso) { return iso.slice(0, 7); }
+  function monthLabel(key) {
+    var parts = key.split('-');
+    return MONTHS_RU[parseInt(parts[1],10)-1] + ' ' + parts[0];
+  }
+  function sessionKey(date, court) {
+    return date + '|' + (court || 'YesToday');
+  }
+  function findSession(date, court) {
+    var c = court || 'YesToday';
+    for (var i = 0; i < state.sessions.length; i++) {
+      var s = state.sessions[i];
+      if (s.date === date && (s.court || 'YesToday') === c) return i;
+    }
+    return -1;
+  }
+
+  function calculateAmounts(playersMap, rate) {
+    var names = Object.keys(playersMap);
+    if (names.length === 0) return { amounts: {}, total: 0 };
+    var maxH = 0;
+    for (var i = 0; i < names.length; i++) {
+      if (playersMap[names[i]] > maxH) maxH = playersMap[names[i]];
+    }
+    var amounts = {};
+    for (var n = 0; n < names.length; n++) amounts[names[n]] = 0;
+    var total = 0;
+    for (var t = 0; t < maxH - 0.001; t += STEP) {
+      var present = [];
+      for (var p = 0; p < names.length; p++) {
+        if (playersMap[names[p]] > t + 0.001) present.push(names[p]);
+      }
+      if (present.length === 0) continue;
+      var slotCost = rate * STEP;
+      var share = slotCost / present.length;
+      for (var s = 0; s < present.length; s++) amounts[present[s]] += share;
+      total += slotCost;
+    }
+    for (var k in amounts) amounts[k] = round(amounts[k]);
+    return { amounts: amounts, total: round(total) };
+  }
+  function round(n) { return Math.round(n * 100) / 100; }
+
+  function renderPeople() {
+    var list = document.getElementById('people-list');
+    var html = '';
+    for (var i = 0; i < state.people.length; i++) {
+      var name = state.people[i];
+      var isOn = selected[name] !== undefined;
+      var hrs = isOn ? selected[name] : 2;
+      html += '<div class="person' + (isOn ? ' checked' : '') + '" data-name="' + name + '">' +
+        '<div class="box">' + (isOn ? '✓' : '') + '</div>' +
+        '<span class="name">' + name + '</span>' +
+        '<div class="hours-wrap">' +
+          '<input type="number" class="hours-input" value="' + hrs + '" min="0.5" max="6" step="0.5" data-name="' + name + '">' +
+          '<span>ч</span></div></div>';
+    }
+    list.innerHTML = html;
+    updatePreview();
+  }
+
+  document.getElementById('people-list').addEventListener('click', function(e) {
+    if (e.target.classList.contains('hours-input')) return;
+    var person = e.target.closest('.person');
+    if (!person) return;
+    var name = person.getAttribute('data-name');
+    if (selected[name] !== undefined) delete selected[name];
+    else {
+      var inp = person.querySelector('.hours-input');
+      selected[name] = inp ? parseFloat(inp.value) || 2 : 2;
+    }
+    renderPeople();
+  });
+  document.getElementById('people-list').addEventListener('input', function(e) {
+    if (!e.target.classList.contains('hours-input')) return;
+    var name = e.target.getAttribute('data-name');
+    var val = parseFloat(e.target.value);
+    if (val > 0) { selected[name] = val; updatePreview(); }
+  });
+  document.getElementById('people-list').addEventListener('change', function(e) {
+    if (!e.target.classList.contains('hours-input')) return;
+    var name = e.target.getAttribute('data-name');
+    var val = parseFloat(e.target.value);
+    if (val > 0) { selected[name] = val; updatePreview(); }
+  });
+
+  function updatePreview() {
+    var names = Object.keys(selected);
+    var btn = document.getElementById('save-btn');
+    var preview = document.getElementById('preview');
+    if (names.length === 0) { btn.disabled = true; preview.classList.remove('show'); return; }
+    btn.disabled = false;
+    preview.classList.add('show');
+    var rate = getRate(selectedCourt);
+    var result = calculateAmounts(selected, rate);
+    var sorted = names.slice().sort(function(a,b){ return result.amounts[b]-result.amounts[a]; });
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var n = sorted[i];
+      html += '<div class="preview-row"><span class="pname">' + n +
+        ' <span style="color:var(--muted);font-size:0.8rem">(' + selected[n] + ' ч)</span></span>' +
+        '<span class="pamount">' + result.amounts[n] + ' ₽</span></div>';
+    }
+    document.getElementById('preview-rows').innerHTML = html;
+    document.getElementById('preview-total-val').textContent = result.total + ' ₽';
+  }
+
+  document.getElementById('save-btn').addEventListener('click', function() {
+    var date = document.getElementById('session-date').value;
+    var names = Object.keys(selected);
+    if (!date || names.length === 0) return;
+    var rate = getRate(selectedCourt);
+    var result = calculateAmounts(selected, rate);
+    var players = [];
+    for (var i = 0; i < names.length; i++) {
+      players.push({ name: names[i], hours: selected[names[i]], amount: result.amounts[names[i]] });
+    }
+    var session = { date: date, court: selectedCourt, rate: rate, players: players, total: result.total };
+
+    if (editingKey !== null) {
+      var parts = editingKey.split('|');
+      var oldIdx = findSession(parts[0], parts[1]);
+      if (oldIdx >= 0) state.sessions.splice(oldIdx, 1);
+      var conflict = findSession(date, selectedCourt);
+      if (conflict >= 0) state.sessions.splice(conflict, 1);
+      state.sessions.push(session);
+      editingKey = null;
+      document.getElementById('edit-hint').style.display = 'none';
+      document.getElementById('save-btn').textContent = 'Сохранить занятие';
+      showToast('Изменения сохранены');
+    } else {
+      var existing = findSession(date, selectedCourt);
+      if (existing >= 0) state.sessions[existing] = session;
+      else state.sessions.push(session);
+      showToast('Сохранено!');
+    }
+    state.sessions.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    persist();
+    selected = {};
+    renderPeople();
+  });
+
+  function startEdit(date, court) {
+    var idx = findSession(date, court);
+    if (idx < 0) return;
+    var s = state.sessions[idx];
+    editingKey = sessionKey(date, court);
+    selected = {};
+    for (var i = 0; i < s.players.length; i++) selected[s.players[i].name] = s.players[i].hours;
+    selectedCourt = s.court || 'YesToday';
+    var pills = document.querySelectorAll('.court-pill');
+    for (var i = 0; i < pills.length; i++) {
+      pills[i].classList.toggle('active', pills[i].getAttribute('data-court') === selectedCourt);
+    }
+    updateCourtHint();
+    document.getElementById('session-date').value = s.date;
+    document.getElementById('save-btn').textContent = 'Сохранить изменения';
+    document.getElementById('edit-hint').style.display = 'block';
+    renderPeople();
+    switchTab('today');
+    window.scrollTo(0, 0);
+  }
+
+  function doDelete(date, court) {
+    var idx = findSession(date, court);
+    if (idx < 0) { showToast('Запись не найдена'); return; }
+    state.sessions.splice(idx, 1);
+    persist();
+    var key = sessionKey(date, court);
+    if (editingKey === key) {
+      editingKey = null; selected = {};
+      document.getElementById('edit-hint').style.display = 'none';
+      document.getElementById('save-btn').textContent = 'Сохранить занятие';
+      document.getElementById('session-date').value = getDefaultDate();
+      renderPeople();
+    }
+    renderHistory();
+    showToast('Удалено');
+  }
+
+  function getAvailableMonths() {
+    var set = {};
+    for (var i = 0; i < state.sessions.length; i++) set[getMonthKey(state.sessions[i].date)] = true;
+    return Object.keys(set).sort().reverse();
+  }
+
+  function renderMonthFilter() {
+    var sel = document.getElementById('month-filter');
+    var current = sel.value;
+    var months = getAvailableMonths();
+    var html = '<option value="all">Все месяцы</option>';
+    for (var i = 0; i < months.length; i++) html += '<option value="' + months[i] + '">' + monthLabel(months[i]) + '</option>';
+    sel.innerHTML = html;
+    var found = false;
+    for (var j = 0; j < sel.options.length; j++) if (sel.options[j].value === current) found = true;
+    sel.value = found ? current : 'all';
+  }
+
+  document.getElementById('month-filter').addEventListener('change', function() { renderSummary(); });
+  document.getElementById('court-filter').addEventListener('change', function() { renderSummary(); });
+  document.getElementById('history-court-filter').addEventListener('change', function() { renderHistory(); });
+
+  function renderSummary() {
+    renderMonthFilter();
+    var monthFilter = document.getElementById('month-filter').value;
+    var courtFilter = document.getElementById('court-filter').value;
+
+    var sessions = state.sessions.filter(function(s) {
+      if (monthFilter !== 'all' && getMonthKey(s.date) !== monthFilter) return false;
+      if (courtFilter !== 'all' && (s.court || 'YesToday') !== courtFilter) return false;
+      return true;
+    });
+
+    var totals = {};
+    for (var i = 0; i < state.people.length; i++) totals[state.people[i]] = { money: 0, visits: 0, hours: 0 };
+    for (var s = 0; s < sessions.length; s++) {
+      for (var p = 0; p < sessions[s].players.length; p++) {
+        var pl = sessions[s].players[p];
+        if (!totals[pl.name]) totals[pl.name] = { money: 0, visits: 0, hours: 0 };
+        totals[pl.name].money += pl.amount;
+        totals[pl.name].visits += 1;
+        totals[pl.name].hours += pl.hours;
+      }
+    }
+    var list = [];
+    for (var n in totals) {
+      if (totals[n].money > 0) list.push({ name: n, money: round(totals[n].money), visits: totals[n].visits, hours: round(totals[n].hours) });
+    }
+    list.sort(function(a,b){ return b.money - a.money; });
+    var grand = 0;
+    for (var k = 0; k < list.length; k++) grand += list[k].money;
+    document.getElementById('grand-total').textContent = round(grand) + ' ₽';
+
+    var labelParts = [];
+    if (courtFilter !== 'all') labelParts.push(courtFilter);
+    if (monthFilter !== 'all') labelParts.push(monthLabel(monthFilter).toLowerCase());
+    document.getElementById('period-label').textContent = labelParts.length ? labelParts.join(' · ') : 'Всего должны';
+
+    var container = document.getElementById('summary-list');
+    if (list.length === 0) { container.innerHTML = '<div class="empty">Нет данных за этот период</div>'; return; }
+    var html = '';
+    for (var m = 0; m < list.length; m++) {
+      var item = list[m];
+      html += '<div class="summary-item"><div class="name">' + item.name + '</div><div class="stats"><div class="money">' + item.money + ' ₽</div><div class="sub">' + item.hours + ' ч · ' + item.visits + ' раз</div></div></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function renderHistory() {
+    var container = document.getElementById('history-list');
+    var courtFilter = document.getElementById('history-court-filter').value;
+    var sessions = state.sessions.filter(function(s) {
+      return courtFilter === 'all' || (s.court || 'YesToday') === courtFilter;
+    });
+
+    if (sessions.length === 0) {
+      container.innerHTML = '<div class="card"><div class="empty">Пока нет занятий</div></div>';
+      return;
+    }
+    var groups = {};
+    for (var i = 0; i < sessions.length; i++) {
+      var key = getMonthKey(sessions[i].date);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(sessions[i]);
+    }
+    var keys = Object.keys(groups).sort().reverse();
+    var html = '';
+    for (var g = 0; g < keys.length; g++) {
+      var key = keys[g];
+      var items = groups[key];
+      var monthTotal = 0;
+      for (var t = 0; t < items.length; t++) monthTotal += items[t].total;
+      var isOpen = (g === 0);
+      html += '<div class="month-block"><div class="month-header" data-month="' + key + '">';
+      html += '<span class="mname">' + monthLabel(key) + ' · ' + items.length + ' зан.</span>';
+      html += '<span><span class="mtotal">' + round(monthTotal) + ' ₽</span><span class="arrow">' + (isOpen ? '▼' : '▶') + '</span></span></div>';
+      html += '<div class="month-body' + (isOpen ? ' open' : '') + '" id="month-' + key + '">';
+      for (var j = 0; j < items.length; j++) {
+        var s = items[j];
+        var lines = '';
+        for (var p = 0; p < s.players.length; p++) {
+          lines += '<div class="player-line"><span>' + s.players[p].name + ' (' + s.players[p].hours + ' ч)</span><span class="amt">' + s.players[p].amount + ' ₽</span></div>';
+        }
+        html += '<div class="session"><div class="date">' + formatDate(s.date) + '</div>';
+        html += '<div class="court-tag">' + (s.court || 'YesToday') + '</div>';
+        html += lines;
+        html += '<div class="total-line">Всего за корт: ' + s.total + ' ₽</div>';
+        var sk = sessionKey(s.date, s.court);
+        var sid = sk.replace(/\|/g, '_');
+        html += '<div class="btn-row" id="btns-' + sid + '">';
+        html += '<button type="button" class="btn btn-edit" data-action="edit" data-date="' + s.date + '" data-court="' + (s.court || 'YesToday') + '">Изменить</button>';
+        html += '<button type="button" class="btn btn-danger" data-action="askdelete" data-date="' + s.date + '" data-court="' + (s.court || 'YesToday') + '">Удалить</button></div>';
+        html += '<div class="confirm-bar" id="confirm-' + sid + '"><p>Удалить занятие ' + formatDate(s.date) + ' (' + (s.court || 'YesToday') + ')?</p><div class="btn-row">';
+        html += '<button type="button" class="btn-yes" data-action="confirmdelete" data-date="' + s.date + '" data-court="' + (s.court || 'YesToday') + '">Да, удалить</button>';
+        html += '<button type="button" class="btn-no" data-action="canceldelete" data-date="' + s.date + '" data-court="' + (s.court || 'YesToday') + '">Отмена</button></div></div></div>';
+      }
+      html += '</div></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  document.getElementById('history-list').addEventListener('click', function(e) {
+    var header = e.target.closest('.month-header');
+    if (header) {
+      var mkey = header.getAttribute('data-month');
+      var body = document.getElementById('month-' + mkey);
+      if (body) {
+        body.classList.toggle('open');
+        var arrow = header.querySelector('.arrow');
+        if (arrow) arrow.textContent = body.classList.contains('open') ? '▼' : '▶';
+      }
+      return;
+    }
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    var action = btn.getAttribute('data-action');
+    var date = btn.getAttribute('data-date');
+    var court = btn.getAttribute('data-court') || 'YesToday';
+    if (!date) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var sid = sessionKey(date, court).replace(/\|/g, '_');
+    if (action === 'edit') startEdit(date, court);
+    else if (action === 'askdelete') {
+      var allC = document.querySelectorAll('.confirm-bar');
+      for (var i = 0; i < allC.length; i++) allC[i].classList.remove('show');
+      var allB = document.querySelectorAll('.btn-row[id^="btns-"]');
+      for (var j = 0; j < allB.length; j++) allB[j].style.display = '';
+      var bar = document.getElementById('confirm-' + sid);
+      var btns = document.getElementById('btns-' + sid);
+      if (bar) bar.classList.add('show');
+      if (btns) btns.style.display = 'none';
+    } else if (action === 'confirmdelete') doDelete(date, court);
+    else if (action === 'canceldelete') {
+      var bar2 = document.getElementById('confirm-' + sid);
+      var btns2 = document.getElementById('btns-' + sid);
+      if (bar2) bar2.classList.remove('show');
+      if (btns2) btns2.style.display = '';
+    }
+  });
+
+  function renderSettings() {
+    document.getElementById('rate-yestoday').value = getRate('YesToday');
+    document.getElementById('rate-slavinskogo').value = getRate('Славинского');
+    var container = document.getElementById('people-manage');
+    var html = '';
+    for (var i = 0; i < state.people.length; i++) {
+      html += '<div class="manage-item"><span>' + state.people[i] + '</span><button type="button" class="btn btn-danger" data-idx="' + i + '">✕</button></div>';
+    }
+    container.innerHTML = html;
+  }
+
+  document.getElementById('save-rates-btn').addEventListener('click', function() {
+    var r1 = parseFloat(document.getElementById('rate-yestoday').value);
+    var r2 = parseFloat(document.getElementById('rate-slavinskogo').value);
+    if (r1 > 0) state.rates['YesToday'] = r1;
+    if (r2 > 0) state.rates['Славинского'] = r2;
+    persist();
+    updateCourtHint();
+    updatePreview();
+    showToast('Цены сохранены');
+  });
+
+  document.getElementById('add-person-btn').addEventListener('click', function() {
+    var input = document.getElementById('new-name');
+    var name = input.value.replace(/^\s+|\s+$/g, '');
+    if (!name) return;
+    if (state.people.indexOf(name) >= 0) { showToast('Уже есть'); return; }
+    state.people.push(name); persist(); input.value = '';
+    renderSettings(); renderPeople(); showToast('Добавлен: ' + name);
+  });
+  document.getElementById('people-manage').addEventListener('click', function(e) {
+    var btn = e.target.closest('button[data-idx]');
+    if (!btn) return;
+    var idx = parseInt(btn.getAttribute('data-idx'), 10);
+    var name = state.people[idx];
+    state.people.splice(idx, 1); delete selected[name]; persist();
+    renderSettings(); renderPeople(); showToast('Удалён: ' + name);
+  });
+
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'tennis_data.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url); showToast('Скачано');
+  });
+  document.getElementById('import-btn').addEventListener('click', function() {
+    document.getElementById('import-file').click();
+  });
+  document.getElementById('import-file').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.people || !data.sessions) throw new Error('bad');
+        state = normalizeState(data);
+        persist(); selected = {}; editingKey = null;
+        renderPeople(); renderSettings(); updateCourtHint();
+        showToast('Данные загружены');
+      } catch (err) { showToast('Ошибка файла'); }
+    };
+    reader.readAsText(file);
+  });
+
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2000);
+  }
+
+  renderPeople();
+  updateCourtHint();
+  initCloudUI();
+})();
+</script>
+</body>
+</html>
